@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = new File("config/dupeCommandConfig.json");
+    private static final File CONFIG_FILE = new File("config/entityLimit.json");
 
     public static ModConfig config;
 
