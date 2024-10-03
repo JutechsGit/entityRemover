@@ -10,20 +10,22 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.util.math.Box;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
 
+import java.io.ObjectInputFilter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Main implements ModInitializer {
+    int ENTITY_LIMIT = ConfigManager.config.maxEntities;
 
-    private static final int ENTITY_LIMIT = 50;  // Example limit
     //private static final Logger LOGGER = LogManager.getLogger("EntityCleanerMod");
 
     @Override
     public void onInitialize() {
+        ConfigManager.loadConfig();
         //LOGGER.info("EntityCleanerMod initialized");
 
         // Register server tick event to run our entity check
