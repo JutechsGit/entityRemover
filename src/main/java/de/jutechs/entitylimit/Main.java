@@ -19,13 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Main implements ModInitializer {
-    int ENTITY_LIMIT = ConfigManager.config.maxEntities;
+    int ENTITY_LIMIT;
 
     //private static final Logger LOGGER = LogManager.getLogger("EntityCleanerMod");
 
     @Override
     public void onInitialize() {
         ConfigManager.loadConfig();
+        ENTITY_LIMIT = ConfigManager.config.maxEntities;
         //LOGGER.info("EntityCleanerMod initialized");
 
         // Register server tick event to run our entity check
