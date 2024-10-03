@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "entitylimit",
+  "version": "${version}",
+  "name": "entityLimit",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/entitylimit/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "de.jutechs.entitylimit.Main"
+    ]
+  },
+  "mixins": [
+    "entitylimit.mixins.json",
+    {
+      "config": "entitylimit.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
