@@ -10,24 +10,26 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.util.math.Box;
-//import org.apache.logging.log4j.LogManager;
-//import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 
-import java.io.ObjectInputFilter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Main implements ModInitializer {
+    private static final int RENDER_DISTANCE = 10;
+    private static final int CHECK_INTERVAL_TICKS = 200; // 10 seconds at 20 ticks per second
+    private int tickCounter = 0;
     int ENTITY_LIMIT;
 
-    //private static final Logger LOGGER = LogManager.getLogger("EntityCleanerMod");
+    // private static final Logger LOGGER = LogManager.getLogger("EntityCleanerMod");
 
     @Override
     public void onInitialize() {
         ConfigManager.loadConfig();
         ENTITY_LIMIT = ConfigManager.config.maxEntities;
-        //LOGGER.info("EntityCleanerMod initialized");
+        // LOGGER.info("EntityCleanerMod initialized");
 
         // Register server tick event to run our entity check
         ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
@@ -35,12 +37,24 @@ public class Main implements ModInitializer {
 
     // Method that runs every server tick
     private void onServerTick(MinecraftServer server) {
-        for (ServerWorld world : server.getWorlds()) {
-            // Iterate over all players in the world
-            for (ServerPlayerEntity player : world.getPlayers()) {
-                ChunkPos playerChunkPos = player.getChunkPos();
-                //LOGGER.info("Checking chunk for player at: " + playerChunkPos.x + ", " + playerChunkPos.z);
-                checkAndRemoveEntities(world, playerChunkPos);
+        tickCounter++;
+        if (tickCounter >= CHECK_INTERVAL_TICKS) {
+            tickCounter = 0; // Reset counter
+
+            for (ServerWorld world : server.getWorlds()) {
+                // Iterate over all players in the world
+                for (ServerPlayerEntity player : world.getPlayers()) {
+                    ChunkPos playerChunkPos = player.getChunkPos();
+                    // LOGGER.info("Checking chunks around player at: " + playerChunkPos.x + ", " + playerChunkPos.z);
+
+                    // Loop through each chunk within the render distance
+                    for (int dx = -RENDER_DISTANCE; dx <= RENDER_DISTANCE; dx++) {
+                        for (int dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
+                            ChunkPos currentChunkPos = new ChunkPos(playerChunkPos.x + dx, playerChunkPos.z + dz);
+                            checkAndRemoveEntities(world, currentChunkPos);
+                        }
+                    }
+                }
             }
         }
     }
@@ -48,7 +62,7 @@ public class Main implements ModInitializer {
     // Method to check and remove entities
     public void checkAndRemoveEntities(ServerWorld world, ChunkPos chunkPos) {
         WorldChunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
-        //LOGGER.info("Checking chunk at position: " + chunkPos.x + ", " + chunkPos.z);
+        // LOGGER.info("Checking chunk at position: " + chunkPos.x + ", " + chunkPos.z);
 
         // Define the boundaries of the chunk
         int chunkMinX = chunkPos.getStartX();
@@ -60,7 +74,7 @@ public class Main implements ModInitializer {
         Box chunkBox = new Box(chunkMinX, world.getBottomY(), chunkMinZ, chunkMaxX + 1, world.getTopY(), chunkMaxZ + 1);
         List<Entity> entitiesInChunk = world.getEntitiesByClass(Entity.class, chunkBox, entity -> true);
 
-        //LOGGER.info("Found " + entitiesInChunk.size() + " entities in chunk (" + chunkPos.x + ", " + chunkPos.z + ")");
+        // LOGGER.info("Found " + entitiesInChunk.size() + " entities in chunk (" + chunkPos.x + ", " + chunkPos.z + ")");
 
         // Count entities by type
         Map<EntityType<?>, Integer> entityCountMap = new HashMap<>();
@@ -72,7 +86,7 @@ public class Main implements ModInitializer {
             totalEntities++;
         }
 
-       // LOGGER.info("Total entity count: " + totalEntities);
+        // LOGGER.info("Total entity count: " + totalEntities);
 
         // If the total entity count exceeds the limit
         if (totalEntities > ENTITY_LIMIT) {
@@ -81,7 +95,7 @@ public class Main implements ModInitializer {
 
             // Find the entity type with the most occurrences
             for (Map.Entry<EntityType<?>, Integer> entry : entityCountMap.entrySet()) {
-                //LOGGER.info("Entity type: " + entry.getKey().getName().getString() + ", Count: " + entry.getValue());
+                // LOGGER.info("Entity type: " + entry.getKey().getName().getString() + ", Count: " + entry.getValue());
                 if (entry.getValue() > maxCount) {
                     mostCommonEntity = entry.getKey();
                     maxCount = entry.getValue();
@@ -89,7 +103,7 @@ public class Main implements ModInitializer {
             }
 
             if (mostCommonEntity != null) {
-               // LOGGER.info("Most common entity type: " + mostCommonEntity.getName().getString() + ", Count: " + maxCount);
+                // LOGGER.info("Most common entity type: " + mostCommonEntity.getName().getString() + ", Count: " + maxCount);
 
                 // Remove entities of the most common type
                 for (Entity entity : entitiesInChunk) {
@@ -99,10 +113,10 @@ public class Main implements ModInitializer {
                     }
                 }
             } else {
-              //  LOGGER.warn("No common entity found in chunk (" + chunkPos.x + ", " + chunkPos.z + ")");
+                // LOGGER.warn("No common entity found in chunk (" + chunkPos.x + ", " + chunkPos.z + ")");
             }
         } else {
-           // LOGGER.info("Entity count is below the limit, no entities removed.");
+            // LOGGER.info("Entity count is below the limit, no entities removed.");
         }
     }
 }

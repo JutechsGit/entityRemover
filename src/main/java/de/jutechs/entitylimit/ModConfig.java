@@ -1,5 +1,5 @@
 package de.jutechs.entitylimit;
 
 public class ModConfig {
-    public int maxEntities = 200;
+    public int maxEntities = 2000;
 }
